@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>UniPin MLBB Dia Price Calculator</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    :root {
+      /* Light mode colors */
+      --bg-color: #f5f5f7;
+      --container-bg: #ffffff;
+      --text-color: #222222;
+      --accent-color: #6c56be;
+      --accent-light: #987ddd;
+      --input-bg: #f0f0f5;
+      --input-shadow-inset: rgba(0,0,0,0.1);
+      --table-header-bg: #6c56be;
+      --table-row-bg: #ede9f7;
+      --table-row-hover: #d9d4f4;
+      --button-bg: #6c56be;
+      --button-hover-bg: #987ddd;
+      --button-shadow: rgba(108, 86, 190, 0.5);
+    }
+
+    body.dark {
+      /* Dark mode colors */
+      --bg-color: #121212;
+      --container-bg: #2a2540dd;
+      --text-color: #f0f0f5;
+      --accent-color: #ad7eff;
+      --accent-light: #c3a7ff;
+      --input-bg: #3b3260;
+      --input-shadow-inset: rgba(0,0,0,0.6);
+      --table-header-bg: #5e49a1;
+      --table-row-bg: #4b3e8fdd;
+      --table-row-hover: #6c56becc;
+      --button-bg: #6c56be;
+      --button-hover-bg: #987ddd;
+      --button-shadow: rgba(124, 98, 219, 0.7);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 30px 20px;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .container {
+      max-width: 960px;
+      width: 100%;
+      background: var(--container-bg);
+      border-radius: 16px;
+      padding: 30px 40px;
+      box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+      transition: background-color 0.3s ease;
+      user-select: none;
+    }
+    h2 {
+      text-align: center;
+      color: var(--accent-color);
+      font-weight: 600;
+      font-size: 2.4rem;
+      margin-bottom: 25px;
+      text-shadow: 0 0 6px var(--accent-light);
+      transition: color 0.3s ease, text-shadow 0.3s ease;
+      user-select: text;
+    }
+    h4 {
+      text-align: center;
+      color: var(--accent-light);
+      margin-top: -10px;
+      font-weight: 500;
+      font-size: 1.2rem;
+      user-select: text;
+      transition: color 0.3s ease, text-shadow 0.3s ease;
+    }
+    h3 {
+      color: var(--accent-light);
+      font-weight: 600;
+      font-size: 1.5rem;
+      margin: 40px 0 20px;
+      text-align: center;
+      text-shadow: 0 0 5px var(--accent-light);
+      transition: color 0.3s ease, text-shadow 0.3s ease;
+      user-select: text;
+    }
+    label {
+      display: block;
+      font-weight: 500;
+      font-size: 1.05rem;
+      margin-bottom: 8px;
+      color: var(--text-color);
+      opacity: 0.8;
+      user-select: none;
+      transition: color 0.3s ease;
+    }
+    input[type="number"],
+    select {
+      width: 100%;
+      padding: 14px 18px;
+      font-size: 1.1rem;
+      border-radius: 10px;
+      border: none;
+      background: var(--input-bg);
+      color: var(--text-color);
+      box-shadow: inset 2px 2px 8px var(--input-shadow-inset),
+                  inset -2px -2px 8px var(--input-shadow-inset);
+      transition:
+        background-color 0.3s ease,
+        box-shadow 0.3s ease,
+        color 0.3s ease;
+      margin-bottom: 20px;
+      outline-offset: 3px;
+    }
+    input[type="number"]:focus,
+    select:focus {
+      background-color: var(--accent-color);
+      color: #fff;
+      box-shadow: 0 0 12px var(--accent-light), 0 0 6px var(--accent-light) inset;
+      outline: none;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+    }
+    .table-wrapper {
+      overflow-x: auto;
+      margin-top: 15px;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+      background: var(--container-bg);
+      padding: 10px;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    table {
+      border-collapse: separate;
+      border-spacing: 0 12px;
+      font-size: 0.95rem;
+      width: 100%;
+      min-width: 650px;
+      background-color: transparent;
+      color: var(--text-color);
+      transition: color 0.3s ease;
+    }
+    thead tr {
+      background-color: var(--table-header-bg);
+      color: #f3f0ff;
+      font-weight: 600;
+      text-shadow: 0 0 4px var(--accent-light);
+      transition: background-color 0.3s ease;
+    }
+    thead th, tbody td {
+      padding: 12px 20px;
+      text-align: center;
+      white-space: nowrap;
+      border-radius: 8px;
+    }
+    tbody tr {
+      background-color: var(--table-row-bg);
+      transition: background-color 0.25s ease;
+      cursor: default;
+    }
+    tbody tr:hover {
+      background-color: var(--table-row-hover);
+      box-shadow: 0 0 10px var(--accent-light);
+    }
+    button.copy-btn {
+      display: block;
+      margin: 30px auto 10px auto;
+      background-color: var(--button-bg);
+      color: white;
+      border: none;
+      padding: 14px 30px;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 8px 18px var(--button-shadow);
+      transition: background-color 0.35s ease, box-shadow 0.35s ease;
+      user-select: none;
+      letter-spacing: 0.05em;
+    }
+    button.copy-btn:hover {
+      background-color: var(--button-hover-bg);
+      box-shadow: 0 10px 26px var(--button-shadow);
+    }
+    button.copy-btn:active {
+      background-color: #5a45a4;
+      box-shadow: 0 4px 10px var(--button-shadow);
+    }
+
+    /* Logo styles */
+    .logo-container {
+      text-align: center;
+      margin-bottom: 25px;
+      user-select: none;
+    }
+    .logo-container img {
+      max-width: 200px;
+      width: 50vw;
+      height: auto;
+      user-drag: none;
+      -webkit-user-drag: none;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      pointer-events: none;
+      border-radius: 12px;
+      transition: filter 0.3s ease;
+    }
+
+    /* Toggle switch style */
+    .toggle-switch {
+      position: fixed;
+      top: 15px;
+      right: 20px;
+      background: var(--container-bg);
+      border-radius: 50px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      padding: 8px 16px;
+      font-weight: 600;
+      color: var(--text-color);
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      z-index: 1000;
+    }
+    .toggle-switch:hover {
+      background-color: var(--accent-light);
+      color: #fff;
+    }
+
+    @media (max-width: 520px) {
+      .container {
+        padding: 20px 20px 30px 20px;
+      }
+      h2 {
+        font-size: 1.8rem;
+      }
+      h3 {
+        font-size: 1.25rem;
+      }
+      input[type="number"], select {
+        font-size: 1rem;
+        padding: 12px 15px;
+      }
+      thead th, tbody td {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+      }
+      table {
+        min-width: 100%;
+      }
+      button.copy-btn {
+        width: 100%;
+        font-size: 1rem;
+        padding: 12px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="toggle-switch" id="toggleMode">Switch to Dark Mode</div>
+
+  <div class="container">
+    <!-- Logo -->
+    <div class="logo-container" title="MLBB Price Calculator">
+      <img src="SmileOne.svg" alt="SmileOne Logo" draggable="false" oncontextmenu="return false;" />
+    </div>
+
+    <h2>UniPin Php MLBB Dia Price Calculator</h2>
+    <h4 style="text-align:center; color: var(--accent-light); margin-top: -10px; font-weight: 500;">
+      MagicMall GameShop
+    </h4>
+    <label for="rate">UniPin Coin Rate (Price per 1000 coins):</label>
+    <input type="number" id="rate" placeholder="e.g. *****ks" min="0" step="any" value="" />
+
+    <label for="profit">အမြတ်% Percentage:</label>
+    <input type="number" id="profit" placeholder="e.g. 10" min="0" step="any" value="10" />
+
+    <label for="roundMode">အစွန်းထွက် :</label>
+    <select id="roundMode">
+      <option value="none">အစွန်းထွက်အပါ ( % နှင့် coinစျေးအလိုက်အစွန်းထွက်နေတာတွေပါလာမှာပါ)</option>
+      <option value="fit">စျေးအတိအကျ (အစွန်းထွက်နေတာတွေကိုစျေးအတိပြောင်းပေးမှာပါ 50ksလောက်)</option>
+    </select>
+
+        <h3>Diamond List</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Dia List</th>
+            <th>Dia + Bonus</th>
+            <th>Coin Cost</th>
+            <th>Guide</th>
+            <th>အရင်း</th>
+            <th>ရောင်းစျေး</th>
+            <th>အမြတ်</th>
+          </tr>
+        </thead>
+        <tbody id="resultTable"></tbody>
+      </table>
+    </div>
+    <button class="copy-btn" id="copyNormal">Copy Diamond Price List</button>
+  </div>
+
+<script>
+const normalData = [
+  { diamond: 10, bonus: 1, coin: 11.2 },
+  { diamond: 20, bonus: 2, coin: 22.4 },
+  { diamond: 30, bonus: 3, coin: 33.6, guide: "11+22" },
+  { diamond: 40, bonus: 4, coin: 44.8, guide: "22+22" },
+  { diamond: 51, bonus: 5, coin: 56 },
+  { diamond: 102, bonus: 10, coin: 112 },
+  { diamond: 203, bonus: 20, coin: 224 },
+  { diamond: 303, bonus: 33, coin: 336 },
+  { diamond: 504, bonus: 66, coin: 560 },
+  { diamond: 1007, bonus: 156, coin: 1120 },
+  { diamond: 2015, bonus: 383, coin: 2240 },
+  { diamond: 5035, bonus: 1007, coin: 5600 },
+
+function format(amount) {
+  // ensure number -> integer string with commas
+  return Number(amount).toLocaleString("en-US");
+}
+
+function roundPrice(price, mode) {
+  if (mode === "fit") {
+    return Math.ceil(price / 50) * 50;
+  }
+  return price;
+}
+
+function fillTable(data, tableId) {
+  const rate = parseFloat(document.getElementById("rate").value);
+  const profitPercent = parseFloat(document.getElementById("profit").value);
+  const roundMode = document.getElementById("roundMode").value;
+  const tbody = document.getElementById(tableId);
+
+  // If rate or profit empty -> clear and return
+  if (isNaN(rate) || isNaN(profitPercent)) {
+    tbody.innerHTML = "";
+    return;
+  }
+
+  tbody.innerHTML = "";
+  data.forEach(item => {
+    if (item.label) {
+      // Pass row: keep same number of columns (7) so alignment stays correct
+      const costRaw = (item.coin / 1000) * rate;
+      const profitAmt = costRaw * (profitPercent / 100);
+      const sellPrice = roundPrice(costRaw + profitAmt, roundMode);
+      const profitCalc = sellPrice - costRaw;
+
+      tbody.innerHTML += `
+        <tr>
+          <td>${item.label}</td>
+          <td>-</td>
+          <td>${item.coin}</td>
+          <td>-</td>
+          <td>${format(Math.round(costRaw))}</td>
+          <td>${format(Math.round(sellPrice))}</td>
+          <td>${format(Math.round(profitCalc))}</td>
+        </tr>
+      `;
+    } else {
+      const total = item.diamond + item.bonus;
+      const costRaw = (item.coin / 1000) * rate;            // exact cost (before rounding sell)
+      const profitAmt = costRaw * (profitPercent / 100);   // profit amount (exact)
+      const sellPrice = roundPrice(costRaw + profitAmt, roundMode);
+      const profitCalc = sellPrice - costRaw;
+
+      const guideText = item.guide ? item.guide : "-";
+
+      tbody.innerHTML += `
+        <tr>
+          <td>${total}💎</td>
+          <td>${item.diamond} + ${item.bonus}</td>
+          <td>${item.coin}</td>
+          <td>${guideText}</td>
+          <td>${format(Math.round(costRaw))}</td>
+          <td>${format(Math.round(sellPrice))}</td>
+          <td>${format(Math.round(profitCalc))}</td>
+        </tr>
+      `;
+    }
+  });
+}
+
+function calculate() {
+  fillTable(normalData, "resultTable");
+  fillTable(doubleDiamondData, "doubleDiamondTable");
+}
+
+function copyList(tableId) {
+  const tbody = document.getElementById(tableId);
+  const rows = tbody.querySelectorAll("tr");
+  if (rows.length === 0) return;
+
+  let text = "";
+  rows.forEach(row => {
+    const firstCell = row.cells[0].textContent.trim();
+    // Sell is always the second-to-last column in our layout
+    const sellCell = row.cells[row.cells.length - 2];
+    const sellText = sellCell ? sellCell.textContent.trim() : "";
+
+    // If firstCell is a label (contains non-digit letters) we'll copy label; otherwise copy "X Diamond"
+    if (/[^0-9💎\s]/.test(firstCell)) {
+      // label (e.g. "Weekly Pass")
+      text += `${firstCell} = ${sellText}Ks\n`;
+    } else {
+      text += `${firstCell} Diamond = ${sellText}Ks\n`;
+    }
+  });
+
+  navigator.clipboard.writeText(text).then(() => {
+    alert("Copied to clipboard!");
+  }).catch(() => {
+    alert("Failed to copy. Please copy manually.");
+  });
+}
+
+// Toggle dark mode
+const toggleBtn = document.getElementById('toggleMode');
+toggleBtn.addEventListener('click', () => {
+  document.body.classList.toggle('dark');
+  toggleBtn.textContent = document.body.classList.contains('dark') ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+});
+
+// Event listeners
+document.getElementById("rate").addEventListener("input", calculate);
+document.getElementById("profit").addEventListener("input", calculate);
+document.getElementById("roundMode").addEventListener("change", calculate);
+
+document.getElementById("copyNormal").addEventListener("click", () => copyList("resultTable"));
+document.getElementById("copyDouble").addEventListener("click", () => copyList("doubleDiamondTable"));
+
+// initial
+calculate();
+</script>
+</body>
+</html>
