@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-  <title>UniPin MLBB Dia Price Calculator</title>
+  <title>UniPin Php MLBB Dia Price Calculator</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 
@@ -275,14 +275,14 @@
   <div class="container">
     <!-- Logo -->
     <div class="logo-container" title="MLBB Price Calculator">
-      <img src="SmileOne.svg" alt="SmileOne Logo" draggable="false" oncontextmenu="return false;" />
+      <img src="SmileOne.svg" alt="Logo" draggable="false" oncontextmenu="return false;" />
     </div>
 
     <h2>UniPin Php MLBB Dia Price Calculator</h2>
     <h4 style="text-align:center; color: var(--accent-light); margin-top: -10px; font-weight: 500;">
       MagicMall GameShop
     </h4>
-    <label for="rate">UniPin Coin Rate (Price per 1000 coins):</label>
+    <label for="rate">SmileOne Coin Rate (Price per 1000 coins):</label>
     <input type="number" id="rate" placeholder="e.g. *****ks" min="0" step="any" value="" />
 
     <label for="profit">အမြတ်% Percentage:</label>
@@ -312,7 +312,6 @@
       </table>
     </div>
     <button class="copy-btn" id="copyNormal">Copy Diamond Price List</button>
-  </div>
 
 <script>
 const normalData = [
@@ -328,6 +327,8 @@ const normalData = [
   { diamond: 1007, bonus: 156, coin: 1120 },
   { diamond: 2015, bonus: 383, coin: 2240 },
   { diamond: 5035, bonus: 1007, coin: 5600 },
+];
+
 
 function format(amount) {
   // ensure number -> integer string with commas
@@ -399,7 +400,6 @@ function fillTable(data, tableId) {
 
 function calculate() {
   fillTable(normalData, "resultTable");
-  fillTable(doubleDiamondData, "doubleDiamondTable");
 }
 
 function copyList(tableId) {
