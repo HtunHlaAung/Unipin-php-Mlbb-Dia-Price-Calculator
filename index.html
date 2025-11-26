@@ -2,299 +2,323 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-  <title>UniPin Php MLBB Dia Price Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>UniPin PHP MLBB Dia Price Calculator</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
-
+    /* --- THEME VARIABLES (Tailored to blue/primary theme) --- */
     :root {
-      /* Light mode colors */
-      --bg-color: #f5f5f7;
-      --container-bg: #ffffff;
-      --text-color: #222222;
-      --accent-color: #6c56be;
-      --accent-light: #987ddd;
-      --input-bg: #f0f0f5;
-      --input-shadow-inset: rgba(0,0,0,0.1);
-      --table-header-bg: #6c56be;
-      --table-row-bg: #ede9f7;
-      --table-row-hover: #d9d4f4;
-      --button-bg: #6c56be;
-      --button-hover-bg: #987ddd;
-      --button-shadow: rgba(108, 86, 190, 0.5);
+      --primary: #0b84ff;
+      --primary-dark: #0060c0;
+      --danger: #ef4444;
+      --bg-gradient: linear-gradient(135deg, #f0f6ff 0%, #ffffff 100%);
+      --surface: rgba(255, 255, 255, 0.65); 
+      --surface-light: rgba(255, 255, 255, 0.85); 
+      --surface-border: rgba(255, 255, 255, 0.4);
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+      --radius: 16px;
+      --font-family: 'Inter', 'Poppins', system-ui, -apple-system, sans-serif;
+      --table-header-bg: var(--primary-dark);
+      --particle-color: rgba(11, 132, 255, 0.4); 
+      --highlight-bg: #e6f0ff; 
     }
 
     body.dark {
-      /* Dark mode colors */
-      --bg-color: #121212;
-      --container-bg: #2a2540dd;
-      --text-color: #f0f0f5;
-      --accent-color: #ad7eff;
-      --accent-light: #c3a7ff;
-      --input-bg: #3b3260;
-      --input-shadow-inset: rgba(0,0,0,0.6);
-      --table-header-bg: #5e49a1;
-      --table-row-bg: #4b3e8fdd;
-      --table-row-hover: #6c56becc;
-      --button-bg: #6c56be;
-      --button-hover-bg: #987ddd;
-      --button-shadow: rgba(124, 98, 219, 0.7);
+      --primary: #58a6ff; 
+      --primary-dark: #0b84ff;
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      --surface: rgba(30, 41, 59, 0.7);
+      --surface-light: rgba(30, 41, 59, 0.9);
+      --surface-border: rgba(255, 255, 255, 0.08);
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      --table-header-bg: var(--primary-dark);
+      --particle-color: rgba(255, 255, 255, 0.25); 
+      --highlight-bg: #0d294d; 
+    }
+    
+    /* --- ANIMATION KEYFRAMES --- */
+    @keyframes fadeInSlideUp {
+      from { opacity: 0; transform: translateY(30px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    
+    /* --- CANVAS STYLES FOR PARTICLES --- */
+    #particleCanvas {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      z-index: 0; pointer-events: none;
     }
 
+    /* --- GENERAL STYLES --- */
     * {
-      box-sizing: border-box;
+      box-sizing: border-box; -webkit-tap-highlight-color: transparent;
+      transition: background-color 0.25s, color 0.25s, box-shadow 0.25s, border-color 0.25s, transform 0.25s;
     }
     body {
-      font-family: 'Poppins', sans-serif;
-      background: var(--bg-color);
-      color: var(--text-color);
-      margin: 0;
-      padding: 30px 20px;
-      display: flex;
-      justify-content: center;
-      min-height: 100vh;
-      transition: background-color 0.3s ease, color 0.3s ease;
-      -webkit-tap-highlight-color: transparent;
+      font-family: var(--font-family); background: var(--bg-gradient);
+      color: var(--text); margin: 0; padding: 15px 12px;
+      display: flex; justify-content: center; min-height: 100vh;
+      transition: background 0.3s ease; font-size: 14px; position: relative; 
     }
-    .container {
-      max-width: 960px;
-      width: 100%;
-      background: var(--container-bg);
-      border-radius: 16px;
-      padding: 30px 40px;
-      box-shadow: 0 12px 24px rgba(0,0,0,0.1);
-      transition: background-color 0.3s ease;
-      user-select: none;
+    .calculator-card {
+      max-width: 960px; width: 100%; background: var(--surface);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border-radius: var(--radius); padding: 30px 40px;
+      box-shadow: var(--shadow); display: flex; flex-direction: column;
+      position: relative; animation: fadeInSlideUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      opacity: 0; z-index: 1;
     }
+    
+    /* Subtle Border */
+    .calculator-card::before {
+        content: ''; position: absolute; inset: 0; border-radius: var(--radius);
+        padding: 1px; background: linear-gradient(135deg, rgba(11, 132, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 100%);
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor; mask-composite: exclude;
+        pointer-events: none; opacity: 0.8; z-index: 2; 
+    }
+    .dark .calculator-card::before {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(11, 132, 255, 0.3) 100%);
+    }
+
+    /* Content z-index fix */
+    h2, h4, h3, label, input, .round-mode-selector, .table-wrapper, button, .toggle-switch, .input-col {
+        position: relative; z-index: 3; 
+    }
+
     h2 {
-      text-align: center;
-      color: var(--accent-color);
-      font-weight: 600;
-      font-size: 2.4rem;
-      margin-bottom: 25px;
-      text-shadow: 0 0 6px var(--accent-light);
-      transition: color 0.3s ease, text-shadow 0.3s ease;
-      user-select: text;
+      text-align: center; color: var(--primary); font-weight: 700;
+      font-size: 2.2rem; margin-bottom: 25px;
+      text-shadow: 0 0 5px rgba(11, 132, 255, 0.3); user-select: text;
     }
     h4 {
-      text-align: center;
-      color: var(--accent-light);
-      margin-top: -10px;
-      font-weight: 500;
-      font-size: 1.2rem;
-      user-select: text;
-      transition: color 0.3s ease, text-shadow 0.3s ease;
+      text-align: center; color: var(--text-muted); margin-top: -10px;
+      font-weight: 500; font-size: 1.1rem; user-select: text;
     }
     h3 {
-      color: var(--accent-light);
-      font-weight: 600;
-      font-size: 1.5rem;
-      margin: 40px 0 20px;
-      text-align: center;
-      text-shadow: 0 0 5px var(--accent-light);
-      transition: color 0.3s ease, text-shadow 0.3s ease;
-      user-select: text;
+      color: var(--primary); font-weight: 600; font-size: 1.4rem;
+      margin: 35px 0 15px; text-align: center; user-select: text;
     }
     label {
-      display: block;
-      font-weight: 500;
-      font-size: 1.05rem;
-      margin-bottom: 8px;
-      color: var(--text-color);
-      opacity: 0.8;
-      user-select: none;
-      transition: color 0.3s ease;
+      display: block; font-weight: 500; font-size: 1rem;
+      margin-bottom: 8px; color: var(--text-muted); user-select: none;
     }
-    input[type="number"],
-    select {
-      width: 100%;
-      padding: 14px 18px;
-      font-size: 1.1rem;
-      border-radius: 10px;
-      border: none;
-      background: var(--input-bg);
-      color: var(--text-color);
-      box-shadow: inset 2px 2px 8px var(--input-shadow-inset),
-                  inset -2px -2px 8px var(--input-shadow-inset);
-      transition:
-        background-color 0.3s ease,
-        box-shadow 0.3s ease,
-        color 0.3s ease;
-      margin-bottom: 20px;
-      outline-offset: 3px;
+    input[type="number"], select {
+      width: 100%; padding: 12px 16px; font-size: 1rem;
+      border-radius: 10px; border: 1px solid var(--surface-border);
+      background: var(--surface-light); color: var(--text);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05) inset; margin-bottom: 20px; 
+      outline: none; transition: all 0.3s ease;
     }
+    
+    /* Pulsing Focus Glow */
     input[type="number"]:focus,
     select:focus {
-      background-color: var(--accent-color);
-      color: #fff;
-      box-shadow: 0 0 12px var(--accent-light), 0 0 6px var(--accent-light) inset;
-      outline: none;
-      transition: background-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+      border-color: var(--primary);
+      box-shadow: 0 0 15px rgba(11, 132, 255, 0.6), 0 0 0 3px rgba(11, 132, 255, 0.3);
     }
-    .table-wrapper {
-      overflow-x: auto;
-      margin-top: 15px;
-      border-radius: 12px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.1);
-      background: var(--container-bg);
-      padding: 10px;
-      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    .dark input[type="number"]:focus,
+    .dark select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 15px rgba(88, 166, 255, 0.5), 0 0 0 3px rgba(88, 166, 255, 0.25);
     }
-    table {
-      border-collapse: separate;
-      border-spacing: 0 12px;
-      font-size: 0.95rem;
-      width: 100%;
-      min-width: 650px;
-      background-color: transparent;
-      color: var(--text-color);
-      transition: color 0.3s ease;
+
+    /* Invalid input style */
+    input.invalid {
+      border-color: var(--danger);
+      box-shadow: 0 0 15px rgba(239, 68, 68, 0.6), 0 0 0 3px rgba(239, 68, 68, 0.3);
     }
-    thead tr {
-      background-color: var(--table-header-bg);
-      color: #f3f0ff;
-      font-weight: 600;
-      text-shadow: 0 0 4px var(--accent-light);
-      transition: background-color 0.3s ease;
-    }
-    thead th, tbody td {
-      padding: 12px 20px;
-      text-align: center;
-      white-space: nowrap;
-      border-radius: 8px;
-    }
-    tbody tr {
-      background-color: var(--table-row-bg);
-      transition: background-color 0.25s ease;
-      cursor: default;
-    }
-    tbody tr:hover {
-      background-color: var(--table-row-hover);
-      box-shadow: 0 0 10px var(--accent-light);
-    }
+
+    /* --- Button Styling (Primary) --- */
     button.copy-btn {
-      display: block;
-      margin: 30px auto 10px auto;
-      background-color: var(--button-bg);
-      color: white;
-      border: none;
-      padding: 14px 30px;
-      border-radius: 12px;
-      font-size: 1.1rem;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 8px 18px var(--button-shadow);
-      transition: background-color 0.35s ease, box-shadow 0.35s ease;
-      user-select: none;
-      letter-spacing: 0.05em;
+      display: block; margin: 30px auto 10px auto; background: var(--primary);
+      color: white; border: none; padding: 14px 30px; border-radius: 12px;
+      font-size: 1.05rem; font-weight: 600; cursor: pointer; position: static; 
+      z-index: 3; overflow: visible;
+      box-shadow: 0 5px 15px rgba(11, 132, 255, 0.4);
+      transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+      user-select: none; letter-spacing: 0.02em;
     }
+
     button.copy-btn:hover {
-      background-color: var(--button-hover-bg);
-      box-shadow: 0 10px 26px var(--button-shadow);
+      background: var(--primary-dark);
+      box-shadow: 0 7px 20px rgba(11, 132, 255, 0.5);
+      transform: translateY(-2px);
     }
     button.copy-btn:active {
-      background-color: #5a45a4;
-      box-shadow: 0 4px 10px var(--button-shadow);
+      transform: translateY(0);
+      box-shadow: 0 3px 10px rgba(11, 132, 255, 0.4);
     }
+    
+    /* --- Round Mode Selector Button Group --- */
+    .round-mode-selector {
+      display: flex; gap: 8px; margin-bottom: 20px;
+      background: var(--surface-light); border: 1px solid var(--surface-border);
+      border-radius: 10px; padding: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05) inset;
+    }
+    .mode-btn {
+      flex: 1; padding: 10px 15px; border: none; border-radius: 8px;
+      background: transparent; color: var(--text-muted); font-weight: 500;
+      cursor: pointer; transition: all 0.25s; font-size: 0.95rem;
+    }
+    .mode-btn:hover { background: rgba(11, 132, 255, 0.1); color: var(--text); }
+    .dark .mode-btn:hover { background: rgba(255, 255, 255, 0.05); }
+    .mode-btn.active {
+      background: var(--primary); color: white;
+      box-shadow: 0 2px 8px rgba(11, 132, 255, 0.3); font-weight: 600;
+      transform: scale(1.02); 
+    }
+    .mode-btn.active:hover { background: var(--primary-dark); color: white; transform: scale(1.02); }
+
+
+    /* --- Table Styles --- */
+    .table-wrapper {
+      overflow-x: auto; margin-top: 15px; border-radius: var(--radius);
+      box-shadow: var(--shadow); background: var(--surface);
+      border: 1px solid var(--surface-border); padding: 1px; 
+    }
+    table {
+      border-collapse: collapse; font-size: 0.95rem;
+      width: 100%; min-width: 650px; color: var(--text);
+    }
+    thead {
+        position: sticky; top: 0; z-index: 10;
+        background-color: var(--table-header-bg); color: white;
+    }
+    thead th {
+      padding: 14px 20px; text-align: center; white-space: nowrap;
+      font-weight: 600;
+    }
+    tbody tr {
+      background-color: var(--surface-light); transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: default;
+    }
+    tbody td {
+        padding: 10px 20px; text-align: center; white-space: nowrap;
+        border-bottom: 1px solid var(--surface-border);
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover {
+      background-color: rgba(11, 132, 255, 0.1);
+      transform: translateY(-1px); 
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+    .dark tbody tr:hover { background-color: rgba(255, 255, 255, 0.05); }
+    
+    /* --- Sell Price Highlight Gem Effect --- */
+    .sell-price-cell {
+        position: relative; overflow: hidden; 
+        background-color: var(--highlight-bg) !important; 
+        font-weight: 600; transform-style: preserve-3d; z-index: 1;
+    }
+
+    .sell-price-text {
+        display: inline-block; padding: 4px 10px; border-radius: 8px;
+        background: var(--surface-light); color: var(--primary);
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); transition: all 0.3s ease;
+        transform: translateZ(0); 
+    }
+
+    tbody tr:hover .sell-price-cell { transform: scale(1.05) translateZ(5px); }
+    tbody tr:hover .sell-price-text {
+        box-shadow: 0 0 15px rgba(11, 132, 255, 0.5), 0 0 5px rgba(0, 0, 0, 0.1);
+        background: var(--surface); 
+    }
+    /* ------------------------------------------------ */
 
     /* Logo styles */
-    .logo-container {
-      text-align: center;
-      margin-bottom: 25px;
-      user-select: none;
-    }
-    .logo-container img {
-      max-width: 200px;
-      width: 50vw;
-      height: auto;
-      user-drag: none;
-      -webkit-user-drag: none;
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-      pointer-events: none;
-      border-radius: 12px;
-      transition: filter 0.3s ease;
-    }
+    .logo-container { text-align: center; margin-bottom: 25px; user-select: none; }
+    .logo-container img { max-width: 180px; width: 40vw; height: auto; border-radius: 12px; }
 
-    /* Toggle switch style */
+    /* --- Toggle switch style --- */
     .toggle-switch {
-      position: fixed;
-      top: 15px;
-      right: 20px;
-      background: var(--container-bg);
-      border-radius: 50px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      padding: 8px 16px;
-      font-weight: 600;
-      color: var(--text-color);
-      cursor: pointer;
-      user-select: none;
-      transition: background-color 0.3s ease, color 0.3s ease;
-      z-index: 1000;
+      position: absolute; top: 15px; right: 20px; background: var(--surface);
+      backdrop-filter: blur(5px); border: 1px solid var(--surface-border);
+      border-radius: 12px; box-shadow: var(--shadow); padding: 8px 12px;
+      font-weight: 500; color: var(--text-muted); cursor: pointer;
+      user-select: none; font-size: 0.9rem; transition: all 0.25s; z-index: 3;
     }
-    .toggle-switch:hover {
-      background-color: var(--accent-light);
-      color: #fff;
+    .toggle-switch:hover { background-color: var(--surface-light); color: var(--primary); transform: translateY(-1px); }
+    .toggle-switch:active { transform: translateY(0); }
+    
+    /* --- Toast Notification (Non-blocking alert) --- */
+    .toast-message {
+      position: fixed; bottom: 20px; right: 20px; background: var(--primary);
+      color: white; padding: 12px 20px; border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); opacity: 0;
+      visibility: hidden; transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+      transform: translateY(100%); z-index: 2000; font-weight: 600;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .toast-message.show {
+      opacity: 1; visibility: visible; transform: translateY(0);
     }
 
+    /* --- Responsive Adjustments --- */
+    @media (max-width: 600px) {
+      .input-col input[type="number"] { margin-bottom: 20px; }
+    }
     @media (max-width: 520px) {
-      .container {
-        padding: 20px 20px 30px 20px;
-      }
-      h2 {
-        font-size: 1.8rem;
-      }
-      h3 {
-        font-size: 1.25rem;
-      }
-      input[type="number"], select {
-        font-size: 1rem;
-        padding: 12px 15px;
-      }
-      thead th, tbody td {
-        padding: 8px 10px;
-        font-size: 0.85rem;
-      }
-      table {
-        min-width: 100%;
-      }
-      button.copy-btn {
-        width: 100%;
-        font-size: 1rem;
-        padding: 12px 0;
-      }
+      .calculator-card { padding: 20px 15px 30px 15px; }
+      h2 { font-size: 1.6rem; }
+      h3 { font-size: 1.2rem; }
+      thead th, tbody td { padding: 8px 10px; font-size: 0.8rem; }
+      button.copy-btn { width: 100%; font-size: 1rem; padding: 12px 0; }
+      .toggle-switch { top: 10px; right: 10px; font-size: 0.8rem; padding: 6px 10px; }
+      .mode-btn { padding: 8px 10px; font-size: 0.85rem; }
     }
   </style>
 </head>
 <body>
-  <div class="toggle-switch" id="toggleMode">Switch to Dark Mode</div>
+  
+  <!-- BACKGROUND PARTICLE CANVAS -->
+  <canvas id="particleCanvas"></canvas>
 
-  <div class="container">
-    <!-- Logo -->
-    <div class="logo-container" title="MLBB Price Calculator">
-      <img src="SmileOne.svg" alt="Logo" draggable="false" oncontextmenu="return false;" />
+  <div class="calculator-card">
+    <div class="toggle-switch" id="toggleMode">
+      <i class="fas fa-moon"></i> Dark Mode
     </div>
 
-    <h2>🇵🇭UniPin Php MLBB Dia Price Calculator</h2>
-    <h4 style="text-align:center; color: var(--accent-light); margin-top: -10px; font-weight: 500;">
-      MagicMall GameShop
-    </h4>
-    <label for="rate">UniPin🇵🇭 Coin Rate (Price per 1000 coins):</label>
-    <input type="number" id="rate" placeholder="e.g. *****ks" min="0" step="any" value="" />
+    <!-- Logo -->
+    <div class="logo-container" title="UniPin Price Calculator">
+      <img src="https://placehold.co/240x60/0b84ff/ffffff?text=UniPin+PH+Pricing" alt="UniPin Pricing Tool" draggable="false" oncontextmenu="return false;" />
+    </div>
 
-    <label for="profit">အမြတ်% Percentage:</label>
-    <input type="number" id="profit" placeholder="e.g. 10" min="0" step="any" value="10" />
+    <h2>🇵🇭 UniPin PHP MLBB Dia Price Calculator</h2>
+    <h4>MagicMall GameShop (UniPin Data Only)</h4>
+    
+    <div class="input-col">
+      <label for="rate">
+        <i class="fas fa-coins"></i> UniPin🇵🇭 Coin Rate (Price per 1000 coins):
+      </label>
+      <input type="number" id="rate" placeholder="e.g. 5200" min="0" step="any" value="5200" />
+    </div>
+    
+    <div class="input-col">
+      <label for="profit">
+        <i class="fas fa-dollar-sign"></i> အမြတ် %:
+      </label>
+      <input type="number" id="profit" placeholder="e.g. 10" min="0" step="any" value="10" />
+    </div>
 
-    <label for="roundMode">အစွန်းထွက် :</label>
-    <select id="roundMode">
-      <option value="none">အစွန်းထွက်အပါ ( % နှင့် coinစျေးအလိုက်အစွန်းထွက်နေတာတွေပါလာမှာပါ)</option>
-      <option value="fit">စျေးအတိအကျ (အစွန်းထွက်နေတာတွေကိုစျေးအတိပြောင်းပေးမှာပါ 50ksလောက်)</option>
-    </select>
+    <label for="roundMode-group">
+      <i class="fas fa-cash-register"></i> အစွန်းထွက် :
+    </label>
+    
+    <!-- Round Mode Selector (Button Group) -->
+    <div id="roundMode" class="round-mode-selector" role="radiogroup">
+      <button data-mode="none" class="mode-btn active" aria-checked="true" role="radio">
+        အစွန်းထွက်အပါ (Exact Price)
+      </button>
+      <button data-mode="fit" class="mode-btn" aria-checked="false" role="radio">
+        စျေးအတိအကျ (Nearest 50Ks)
+      </button>
+    </div>
 
-        <h3>Diamond List</h3>
+    <h3><i class="fas fa-gem"></i> Diamond List</h3>
     <div class="table-wrapper">
       <table>
         <thead>
@@ -303,17 +327,28 @@
             <th>Dia + Bonus</th>
             <th>Coin Cost</th>
             <th>Guide</th>
-            <th>အရင်း</th>
-            <th>ရောင်းစျေး</th>
-            <th>အမြတ်</th>
+            <th>အရင်း (Cost)</th>
+            <th>ရောင်းစျေး (Sell)</th>
+            <th>အမြတ် (Profit)</th>
           </tr>
         </thead>
         <tbody id="resultTable"></tbody>
       </table>
     </div>
-    <button class="copy-btn" id="copyNormal">Copy Diamond Price List</button>
+    <button class="copy-btn" id="copyNormal">
+      <i class="fas fa-copy"></i> Copy Diamond Price List
+    </button>
+    
+  </div>
+
+  <!-- Toast Notification Markup -->
+  <div id="toast" class="toast-message">
+    <i class="fas fa-check-circle"></i> <span></span>
+  </div>
+
 
 <script>
+// --- DATA DEFINITION (UniPin Only) ---
 const normalData = [
   { diamond: 10, bonus: 1, coin: 11.2 },
   { diamond: 20, bonus: 2, coin: 22.4 },
@@ -329,124 +364,301 @@ const normalData = [
   { diamond: 5035, bonus: 1007, coin: 5600 },
 ];
 
-
-function format(amount) {
-  // ensure number -> integer string with commas
-  return Number(amount).toLocaleString("en-US");
+// --- UTILITY FUNCTIONS ---
+/**
+ * Shows a temporary toast notification message. (Replaces alert())
+ * @param {string} message - The text to display.
+ */
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  const toastSpan = toast.querySelector('span');
+  toastSpan.textContent = message;
+  toast.classList.add('show');
+  
+  // Hide the message after 3 seconds
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, 3000); 
 }
 
+/**
+ * Formats a number with commas and rounds it for display.
+ * @param {number} amount - The numeric value to format.
+ * @returns {string} - The formatted string.
+ */
+function format(amount) {
+  // We ensure rounding for display consistency before formatting
+  return Number(Math.round(amount)).toLocaleString("en-US");
+}
+
+/**
+ * Rounds the calculated price based on the selected mode.
+ * @param {number} price - The raw calculated selling price.
+ * @param {string} mode - The rounding mode ("none" or "fit").
+ * @returns {number} - The rounded price.
+ */
 function roundPrice(price, mode) {
   if (mode === "fit") {
+    // Round up to the nearest 50 (e.g., 523 -> 550, 501 -> 550)
     return Math.ceil(price / 50) * 50;
   }
-  return price;
+  return price; // Keep raw price for 'none' mode (but it will be rounded in display by format())
 }
 
+function getSelectedRoundMode() {
+    const activeBtn = document.querySelector('#roundMode .mode-btn.active');
+    return activeBtn ? activeBtn.dataset.mode : 'none';
+}
+
+// --- CORE LOGIC ---
+/**
+ * Fills the result table with calculated prices.
+ * @param {Array<Object>} data - The diamond data source.
+ * @param {string} tableId - The ID of the table body to fill.
+ */
 function fillTable(data, tableId) {
-  const rate = parseFloat(document.getElementById("rate").value);
-  const profitPercent = parseFloat(document.getElementById("profit").value);
-  const roundMode = document.getElementById("roundMode").value;
+  // Get input values, ensuring they are parsed as floats
+  const rateInput = document.getElementById("rate");
+  const profitInput = document.getElementById("profit");
+  
+  const rate = parseFloat(rateInput.value);
+  const profitPercent = parseFloat(profitInput.value);
+  const roundMode = getSelectedRoundMode();
   const tbody = document.getElementById(tableId);
 
-  // If rate or profit empty -> clear and return
-  if (isNaN(rate) || isNaN(profitPercent)) {
+  // Guard clause: If rate or profit are invalid, clear table and indicate error
+  if (isNaN(rate) || rate <= 0 || isNaN(profitPercent) || profitPercent < 0) {
     tbody.innerHTML = "";
+    rateInput.classList.toggle('invalid', isNaN(rate) || rate <= 0);
+    profitInput.classList.toggle('invalid', isNaN(profitPercent) || profitPercent < 0);
     return;
   }
+  // Clear error states
+  rateInput.classList.remove('invalid');
+  profitInput.classList.remove('invalid');
 
   tbody.innerHTML = "";
   data.forEach(item => {
-    if (item.label) {
-      // Pass row: keep same number of columns (7) so alignment stays correct
-      const costRaw = (item.coin / 1000) * rate;
-      const profitAmt = costRaw * (profitPercent / 100);
-      const sellPrice = roundPrice(costRaw + profitAmt, roundMode);
-      const profitCalc = sellPrice - costRaw;
+    // Base cost calculation: (Coin Cost / 1000) * Rate
+    const costRaw = (item.coin / 1000) * rate;            
+    const profitAmt = costRaw * (profitPercent / 100);   
+    
+    const sellPriceRaw = costRaw + profitAmt;
+    const sellPriceRounded = roundPrice(sellPriceRaw, roundMode);
+    
+    const profitCalc = sellPriceRounded - costRaw;
+    
+    const guideText = item.guide ? item.guide : "-";
+    const totalDiamonds = item.diamond + item.bonus;
+    const diaBonusText = `${item.diamond} + ${item.bonus}`;
 
-      tbody.innerHTML += `
-        <tr>
-          <td>${item.label}</td>
-          <td>-</td>
-          <td>${item.coin}</td>
-          <td>-</td>
-          <td>${format(Math.round(costRaw))}</td>
-          <td>${format(Math.round(sellPrice))}</td>
-          <td>${format(Math.round(profitCalc))}</td>
-        </tr>
-      `;
-    } else {
-      const total = item.diamond + item.bonus;
-      const costRaw = (item.coin / 1000) * rate;            // exact cost (before rounding sell)
-      const profitAmt = costRaw * (profitPercent / 100);   // profit amount (exact)
-      const sellPrice = roundPrice(costRaw + profitAmt, roundMode);
-      const profitCalc = sellPrice - costRaw;
-
-      const guideText = item.guide ? item.guide : "-";
-
-      tbody.innerHTML += `
-        <tr>
-          <td>${total}💎</td>
-          <td>${item.diamond} + ${item.bonus}</td>
-          <td>${item.coin}</td>
-          <td>${guideText}</td>
-          <td>${format(Math.round(costRaw))}</td>
-          <td>${format(Math.round(sellPrice))}</td>
-          <td>${format(Math.round(profitCalc))}</td>
-        </tr>
-      `;
-    }
+    // Use format(value) which handles the Math.round() for display
+    tbody.innerHTML += `
+      <tr class="data-row">
+        <td>${totalDiamonds}💎</td>
+        <td>${diaBonusText}</td>
+        <td>${item.coin}</td>
+        <td>${guideText}</td>
+        <td>${format(costRaw)}Ks</td>
+        <!-- SELL PRICE CELL with highlight effect -->
+        <td class="sell-price-cell">
+          <span class="sell-price-text">${format(sellPriceRounded)}Ks</span>
+        </td>
+        <td>${format(profitCalc)}Ks</td>
+      </tr>
+    `;
   });
 }
 
 function calculate() {
+  // Save inputs to localStorage
+  localStorage.setItem('mlbb_calc_rate', document.getElementById("rate").value);
+  localStorage.setItem('mlbb_calc_profit', document.getElementById("profit").value);
+  localStorage.setItem('mlbb_calc_roundMode', getSelectedRoundMode());
+
   fillTable(normalData, "resultTable");
 }
 
+/**
+ * Copies the calculated price list from the specified table to the clipboard.
+ * @param {string} tableId - The ID of the table body to copy data from.
+ */
 function copyList(tableId) {
   const tbody = document.getElementById(tableId);
   const rows = tbody.querySelectorAll("tr");
-  if (rows.length === 0) return;
+  
+  if (rows.length === 0 || document.getElementById("rate").classList.contains('invalid')) {
+    showToast("Please enter a valid Rate and Profit before copying.");
+    return;
+  }
 
-  let text = "";
+  let text = "✨ MLBB Diamond Price List (UniPin) ✨\n\n";
   rows.forEach(row => {
-    const firstCell = row.cells[0].textContent.trim();
-    // Sell is always the second-to-last column in our layout
-    const sellCell = row.cells[row.cells.length - 2];
-    const sellText = sellCell ? sellCell.textContent.trim() : "";
+    // Dia List is the first cell
+    const diaCell = row.cells[0].textContent.trim();
+    // Sell price is inside the span in the sixth cell (index 5)
+    const sellText = row.cells[5].querySelector('.sell-price-text').textContent.trim(); 
 
-    // If firstCell is a label (contains non-digit letters) we'll copy label; otherwise copy "X Diamond"
-    if (/[^0-9💎\s]/.test(firstCell)) {
-      // label (e.g. "Weekly Pass")
-      text += `${firstCell} = ${sellText}Ks\n`;
-    } else {
-      text += `${firstCell} Diamond = ${sellText}Ks\n`;
-    }
+    const cleanSellText = sellText.replace(/Ks/g, '').trim();
+    text += `${diaCell} Diamond = ${cleanSellText} Ks\n`;
   });
 
-  navigator.clipboard.writeText(text).then(() => {
-    alert("Copied to clipboard!");
-  }).catch(() => {
-    alert("Failed to copy. Please copy manually.");
-  });
+  try {
+    const tempElement = document.createElement('textarea');
+    tempElement.value = text;
+    document.body.appendChild(tempElement);
+    tempElement.select();
+    document.execCommand('copy');
+    document.body.removeChild(tempElement);
+    showToast("Price List Copied Successfully!");
+  } catch (err) {
+    console.error('Failed to copy text: ', err);
+    showToast("Failed to copy. Please copy manually.");
+  }
 }
 
-// Toggle dark mode
-const toggleBtn = document.getElementById('toggleMode');
-toggleBtn.addEventListener('click', () => {
-  document.body.classList.toggle('dark');
-  toggleBtn.textContent = document.body.classList.contains('dark') ? 'Switch to Light Mode' : 'Switch to Dark Mode';
-});
+// --- PARTICLE LOGIC (Kept from original UI) ---
 
-// Event listeners
-document.getElementById("rate").addEventListener("input", calculate);
-document.getElementById("profit").addEventListener("input", calculate);
-document.getElementById("roundMode").addEventListener("change", calculate);
+const canvas = document.getElementById('particleCanvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+const particleCount = 150; 
 
-document.getElementById("copyNormal").addEventListener("click", () => copyList("resultTable"));
-document.getElementById("copyDouble").addEventListener("click", () => copyList("doubleDiamondTable"));
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
 
-// initial
-calculate();
+class Particle {
+  constructor() {
+    this.reset();
+  }
+
+  reset() {
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.radius = Math.random() * 1.5 + 1;
+    this.velocity = {
+      x: (Math.random() - 0.5) * 0.5,
+      y: (Math.random() - 0.5) * 0.5
+    };
+    this.opacity = Math.random() * 0.7 + 0.3;
+    this.time = Math.random() * 100;
+    this.life = 0;
+    this.maxLife = Math.random() * 500 + 300;
+  }
+
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+    const particleColor = getComputedStyle(document.documentElement).getPropertyValue('--particle-color').trim();
+    ctx.fillStyle = particleColor.replace(/,\s*\d+\)/, `, ${this.opacity * (1 - this.life / this.maxLife)})`); 
+    ctx.fill();
+  }
+
+  update() {
+    this.life++;
+
+    this.x += this.velocity.x + Math.sin(this.time * 0.05) * 0.1;
+    this.y += this.velocity.y + Math.cos(this.time * 0.05) * 0.1;
+    this.time++;
+
+    if (this.life > this.maxLife || this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+        this.reset();
+    }
+  }
+}
+
+function createParticles() {
+  particles = [];
+  for (let i = 0; i < particleCount; i++) {
+    particles.push(new Particle());
+  }
+}
+
+function animateParticles() {
+  // Get background color dynamically for smooth fade
+  ctx.fillStyle = getComputedStyle(document.body).backgroundColor;
+  ctx.globalCompositeOperation = 'destination-in';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.globalCompositeOperation = 'source-over';
+
+  particles.forEach(particle => {
+    particle.update();
+    particle.draw();
+  });
+
+  requestAnimationFrame(animateParticles);
+}
+
+// --- INITIALIZATION ---
+function init() {
+    // 1. Load from Local Storage or use defaults
+    const savedRate = localStorage.getItem('mlbb_calc_rate') || '5200';
+    const savedProfit = localStorage.getItem('mlbb_calc_profit') || '10';
+    const savedRoundMode = localStorage.getItem('mlbb_calc_roundMode') || 'none'; 
+
+    document.getElementById("rate").value = savedRate;
+    document.getElementById("profit").value = savedProfit; 
+    
+    document.querySelectorAll('#roundMode .mode-btn').forEach(btn => {
+        const isActive = btn.dataset.mode === savedRoundMode;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-checked', isActive);
+    });
+    
+    // 2. Initial Calculation
+    calculate();
+
+    // 3. Set Event Listeners
+    document.getElementById("rate").addEventListener("input", calculate);
+    document.getElementById("profit").addEventListener("input", calculate);
+
+    document.getElementById("roundMode").addEventListener("click", (event) => {
+        const target = event.target;
+        if (target.classList.contains('mode-btn') && !target.classList.contains('active')) {
+            document.querySelectorAll('#roundMode .mode-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.setAttribute('aria-checked', 'false');
+            });
+            target.classList.add('active');
+            target.setAttribute('aria-checked', 'true');
+            calculate();
+        }
+    });
+
+    document.getElementById("copyNormal").addEventListener("click", () => copyList("resultTable"));
+
+    // 4. Dark Mode Toggle Logic
+    const toggleBtn = document.getElementById('toggleMode');
+    const isDarkInitial = localStorage.getItem('mlbb_calc_dark') === 'true';
+
+    if (isDarkInitial) {
+        document.body.classList.add('dark');
+        toggleBtn.innerHTML = '<i class="fas fa-sun"></i> Light Mode';
+    } else {
+        toggleBtn.innerHTML = '<i class="fas fa-moon"></i> Dark Mode';
+    }
+    
+    toggleBtn.addEventListener('click', () => {
+      const isDark = document.body.classList.toggle('dark');
+      localStorage.setItem('mlbb_calc_dark', isDark);
+      toggleBtn.innerHTML = isDark ? '<i class="fas fa-sun"></i> Light Mode' : '<i class="fas fa-moon"></i> Dark Mode';
+      
+      // Update particle colors on theme change
+      createParticles();
+    });
+
+    // 5. Initialize and Start Particles
+    resizeCanvas();
+    createParticles();
+    animateParticles();
+    window.addEventListener('resize', resizeCanvas);
+}
+
+// Run initialization when the window loads
+window.onload = init;
 </script>
 </body>
 </html>
+
